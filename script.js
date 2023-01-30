@@ -1,3 +1,8 @@
+const cardNum = 6
+let paginationArray = []
+
+// Fonctions de la Home page
+
 var randMeal
 var mealArray = []
 for(i=0 ; i < 6 ; i++){
@@ -27,9 +32,7 @@ jQuery.ajax({
         selectBox('#region',data.meals,'strArea')
     }
     });
-    
 cardInsert(mealArray)
-
 function cardInsert(data){
     let cards = document.getElementById('cards')
     let addCard
@@ -46,6 +49,54 @@ function cardInsert(data){
         cards.innerHTML += addCard
 }
 }
+function searchMeal(inputData){
+    var mealFound = [];
+    jQuery.ajax({ 
+        url: 'https://themealdb.com/api/json/v1/1/search.php?s='+inputData, 
+        type:'GET',
+        async: false,
+        success:function(data){
+            mealFound = data.meals;
+            paginationArray = mealFound
+        }
+    });
+    return mealFound ;
+}
+function searchGo(){
+    document.querySelector('#pagination').innerHTML = ''
+    let searchText = document.querySelector('#searchInp').value
+    let cards = document.getElementById('cards')
+    cards.innerHTML = ''
+    mealFound = searchMeal(searchText)
+    paginate(mealFound)
+}
+function pages1(pageNum){
+    pagination = document.querySelector('#pagination')
+    let pages = ''
+    for (let i = 1; i <= pageNum; i++) {
+        pages += `<li class="page-item pe-auto"><a class="page-link pe-auto" onclick="pageClick(${i})">${i}</a></li>`
+    }
+    pagination.innerHTML = pages
+}
+function paginate(array, pageID=1){
+    let pageNum = array.length/cardNum
+    let endIndex = pageID*cardNum
+    let startIndex = endIndex-cardNum
+    let arrayPart = []
+    let cards = document.getElementById('cards')
+    cards.innerHTML = ''
+    for (let i = startIndex; i < endIndex; i++) {
+        arrayPart.push(array[i])
+    }
+    cardInsert(arrayPart)
+    pages1(pageNum)
+}
+function pageClick(id){
+    paginate(paginationArray,id)
+}
+
+// Fonctions de la Filter page
+
 function cardInsert2(data){
     let cards2 = document.getElementById('cards2')
     cards2.innerHTML = ''
@@ -93,27 +144,6 @@ function showModal(id){
     document.getElementById('detailMeasures').innerHTML = measures
 
 }
-function searchMeal(inputData){
-    var mealFound = [];
-    jQuery.ajax({ 
-        url: 'https://themealdb.com/api/json/v1/1/search.php?s='+inputData, 
-        type:'GET',
-        async: false,
-        success:function(data){
-    
-            mealFound = data.meals;
-
-        }
-    });
-    return mealFound ;
-}
-function searchGo(){
-    let searchText = document.querySelector('#searchInp').value
-    let cards = document.getElementById('cards')
-    cards.innerHTML = ''
-    const mealFound = searchMeal(searchText)
-    cardInsert(mealFound)
-}
 function selectBox(id, array, boxType){
     selectBoxID = document.querySelector(`${id}`)
     for (let i = 0; i < array.length; i++) {
@@ -127,6 +157,7 @@ function selectBox(id, array, boxType){
 }
 function sortBy(){
     document.querySelector('#notFound').innerHTML = ''
+    document.querySelector('#pagination2').innerHTML = ''
     category = document.querySelector('#category').value
     region = document.querySelector('#region').value
     let categoryList = []
@@ -162,7 +193,8 @@ function sortBy(){
                 }
             });
         }
-        cardInsert2(fullMeals.flat(1))
+        paginationArray = fullMeals.flat(1)
+        paginate2(paginationArray)
     }
     if(category !== 'All' && region === 'All'){
         jQuery.ajax({ 
@@ -177,7 +209,8 @@ function sortBy(){
         for (let i = 0; i < categoryList.length; i++) {
             regionAll.push(categoryList[i])
         }
-        cardInsert2(regionAll)
+        paginationArray = regionAll.flat(1)
+        paginate2(paginationArray)
     }
     if(category === 'All' && region !== 'All'){
         jQuery.ajax({ 
@@ -192,7 +225,8 @@ function sortBy(){
         for (let i = 0; i < regionList.length; i++) {
             categoryAll.push(regionList[i])
         }
-        cardInsert2(categoryAll)
+        paginationArray = categoryAll.flat(1)
+        paginate2(paginationArray)
     }
     jQuery.ajax({ 
         url: `https://themealdb.com/api/json/v1/1/filter.php?a=${region}`, 
@@ -208,7 +242,33 @@ function sortBy(){
                 filteredList.push(regionList[j])
         }
     }
-    cardInsert2(filteredList)
+    paginationArray = filteredList
+    paginate2(paginationArray)
     if(filteredList.length === 0)
     document.querySelector('#notFound').innerHTML = 'Meal not found!'
+}
+
+function pages2(pageNum){
+    pagination = document.querySelector('#pagination2')
+    let pages = ''
+    for (let i = 1; i <= pageNum; i++) {
+        pages += `<li class="page-item pe-auto"><a class="page-link pe-auto" onclick="pageClick2(${i})">${i}</a></li>`
+    }
+    pagination.innerHTML = pages
+}
+function paginate2(array, pageID=1){
+    let pageNum = array.length/cardNum
+    let endIndex = pageID*cardNum
+    let startIndex = endIndex-cardNum
+    let arrayPart = []
+    let cards = document.getElementById('cards2')
+    cards.innerHTML = ''
+    for (let i = startIndex; i < endIndex; i++) {
+        arrayPart.push(array[i])
+    }
+    cardInsert2(arrayPart)
+    pages2(pageNum)
+}
+function pageClick2(id){
+    paginate2(paginationArray,id)
 }
