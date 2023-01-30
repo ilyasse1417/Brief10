@@ -3,6 +3,24 @@ const cardNum = 6
 
 let paginationArray = []
 
+// Appel des APIs pour remplir les select box
+jQuery.ajax({ 
+    url: 'https://themealdb.com/api/json/v1/1/list.php?c=list', 
+    type:'GET',
+    async: false,
+    success:function(data){
+        selectBox('#category',data.meals,'strCategory')
+    }
+    });
+jQuery.ajax({ 
+    url: 'https://themealdb.com/api/json/v1/1/list.php?a=list', 
+    type:'GET',
+    async: false,
+    success:function(data){
+        selectBox('#region',data.meals,'strArea')
+    }
+    });
+
 // Fonctions de la Home page
 
 // Recettes aléatoires
@@ -93,23 +111,7 @@ function pageClick(id){
 }
 
 // Fonctions de la Filter page
-// Appel des APIs pour remplir les select box
-jQuery.ajax({ 
-    url: 'https://themealdb.com/api/json/v1/1/list.php?c=list', 
-    type:'GET',
-    async: false,
-    success:function(data){
-        selectBox('#category',data.meals,'strCategory')
-    }
-    });
-jQuery.ajax({ 
-    url: 'https://themealdb.com/api/json/v1/1/list.php?a=list', 
-    type:'GET',
-    async: false,
-    success:function(data){
-        selectBox('#region',data.meals,'strArea')
-    }
-    });
+
 // Fonction d'insertion
 function cardInsert2(data){
     let cards2 = document.getElementById('cards2')
@@ -180,6 +182,14 @@ function sortBy(){
     let categoryList = []
     let regionList = []
     let filteredList = []
+    jQuery.ajax({ 
+        url: `https://themealdb.com/api/json/v1/1/filter.php?c=${category}`, 
+        type:'GET',
+        async: false,
+        success:function(data){
+            categoryList = data.meals
+        }
+    });
     // Condition All dans les 2 select boxes
     if(category === 'All' && region === 'All'){
         let fullCatList = []
@@ -240,14 +250,6 @@ function sortBy(){
         paginate2(paginationArray)
     }
     // Condition quand on remplit les select boxes
-    jQuery.ajax({ 
-        url: `https://themealdb.com/api/json/v1/1/filter.php?c=${category}`, 
-        type:'GET',
-        async: false,
-        success:function(data){
-            categoryList = data.meals
-        }
-    });
     jQuery.ajax({ 
         url: `https://themealdb.com/api/json/v1/1/filter.php?a=${region}`, 
         type:'GET',
