@@ -1,8 +1,11 @@
+// Nombre de cartes dans la page
 const cardNum = 6
+
 let paginationArray = []
 
 // Fonctions de la Home page
 
+// Recettes aléatoires
 var randMeal
 var mealArray = []
 for(i=0 ; i < 6 ; i++){
@@ -16,23 +19,10 @@ $.ajax({
     }
 })
 }
-jQuery.ajax({ 
-    url: 'https://themealdb.com/api/json/v1/1/list.php?c=list', 
-    type:'GET',
-    async: false,
-    success:function(data){
-        selectBox('#category',data.meals,'strCategory')
-    }
-    });
-jQuery.ajax({ 
-    url: 'https://themealdb.com/api/json/v1/1/list.php?a=list', 
-    type:'GET',
-    async: false,
-    success:function(data){
-        selectBox('#region',data.meals,'strArea')
-    }
-    });
+// Inserer les 6 recettes aléatoires 
 cardInsert(mealArray)
+
+// Fonction d'insertion
 function cardInsert(data){
     let cards = document.getElementById('cards')
     let addCard
@@ -49,6 +39,7 @@ function cardInsert(data){
         cards.innerHTML += addCard
 }
 }
+// Fonction de recherche
 function searchMeal(inputData){
     var mealFound = [];
     jQuery.ajax({ 
@@ -62,6 +53,7 @@ function searchMeal(inputData){
     });
     return mealFound ;
 }
+// Fonction onclick qui insert les recettes recherchées
 function searchGo(){
     document.querySelector('#pagination').innerHTML = ''
     let searchText = document.querySelector('#searchInp').value
@@ -70,16 +62,20 @@ function searchGo(){
     mealFound = searchMeal(searchText)
     paginate(mealFound)
 }
+// Fonction qui insert les touches de pagination
 function pages1(pageNum){
-    pagination = document.querySelector('#pagination')
+    let pagination = document.querySelector('#pagination')
     let pages = ''
     for (let i = 1; i <= pageNum; i++) {
         pages += `<li class="page-item pe-auto"><a class="page-link pe-auto" onclick="pageClick(${i})">${i}</a></li>`
     }
     pagination.innerHTML = pages
 }
+// Fonction de pagination
 function paginate(array, pageID=1){
+    // On divise la liste des recettes par 6
     let pageNum = array.length/cardNum
+    // 2 variables qui sginifient le point de commencement et le point d'arret
     let endIndex = pageID*cardNum
     let startIndex = endIndex-cardNum
     let arrayPart = []
@@ -91,12 +87,30 @@ function paginate(array, pageID=1){
     cardInsert(arrayPart)
     pages1(pageNum)
 }
+// Fonction onClick qui sert a defiler entre les pages
 function pageClick(id){
     paginate(paginationArray,id)
 }
 
 // Fonctions de la Filter page
-
+// Appel des APIs pour remplir les select box
+jQuery.ajax({ 
+    url: 'https://themealdb.com/api/json/v1/1/list.php?c=list', 
+    type:'GET',
+    async: false,
+    success:function(data){
+        selectBox('#category',data.meals,'strCategory')
+    }
+    });
+jQuery.ajax({ 
+    url: 'https://themealdb.com/api/json/v1/1/list.php?a=list', 
+    type:'GET',
+    async: false,
+    success:function(data){
+        selectBox('#region',data.meals,'strArea')
+    }
+    });
+// Fonction d'insertion
 function cardInsert2(data){
     let cards2 = document.getElementById('cards2')
     cards2.innerHTML = ''
@@ -113,6 +127,7 @@ function cardInsert2(data){
         </div> `
         cards2.innerHTML += addCard
 }}
+// Fonction Modal
 function showModal(id){
     let detailArray = []
     $.ajax({
@@ -144,6 +159,7 @@ function showModal(id){
     document.getElementById('detailMeasures').innerHTML = measures
 
 }
+// Fonction qui remplit les select boxes
 function selectBox(id, array, boxType){
     selectBoxID = document.querySelector(`${id}`)
     for (let i = 0; i < array.length; i++) {
@@ -155,6 +171,7 @@ function selectBox(id, array, boxType){
         selectBoxID.innerHTML += `<option value="${array[i][`${boxType}`]}">${array[i][`${boxType}`]}</option>`
     }
 }
+// Fonction onClick qui filtre les recette d'apres les select boxes
 function sortBy(){
     document.querySelector('#notFound').innerHTML = ''
     document.querySelector('#pagination2').innerHTML = ''
@@ -163,14 +180,7 @@ function sortBy(){
     let categoryList = []
     let regionList = []
     let filteredList = []
-    jQuery.ajax({ 
-        url: `https://themealdb.com/api/json/v1/1/filter.php?c=${category}`, 
-        type:'GET',
-        async: false,
-        success:function(data){
-            categoryList = data.meals
-        }
-    });
+    // Condition All dans les 2 select boxes
     if(category === 'All' && region === 'All'){
         let fullCatList = []
         jQuery.ajax({ 
@@ -179,7 +189,6 @@ function sortBy(){
             async: false,
             success:function(data){
                 fullCatList = data.meals
-                console.log(fullCatList)
             }
         });
         let fullMeals = []
@@ -196,6 +205,7 @@ function sortBy(){
         paginationArray = fullMeals.flat(1)
         paginate2(paginationArray)
     }
+    // Condition All que dans region
     if(category !== 'All' && region === 'All'){
         jQuery.ajax({ 
             url: `https://themealdb.com/api/json/v1/1/filter.php?c=${category}`, 
@@ -212,6 +222,7 @@ function sortBy(){
         paginationArray = regionAll.flat(1)
         paginate2(paginationArray)
     }
+    // Condition All que dans category
     if(category === 'All' && region !== 'All'){
         jQuery.ajax({ 
             url: `https://themealdb.com/api/json/v1/1/filter.php?a=${region}`, 
@@ -228,6 +239,15 @@ function sortBy(){
         paginationArray = categoryAll.flat(1)
         paginate2(paginationArray)
     }
+    // Condition quand on remplit les select boxes
+    jQuery.ajax({ 
+        url: `https://themealdb.com/api/json/v1/1/filter.php?c=${category}`, 
+        type:'GET',
+        async: false,
+        success:function(data){
+            categoryList = data.meals
+        }
+    });
     jQuery.ajax({ 
         url: `https://themealdb.com/api/json/v1/1/filter.php?a=${region}`, 
         type:'GET',
@@ -247,7 +267,7 @@ function sortBy(){
     if(filteredList.length === 0)
     document.querySelector('#notFound').innerHTML = 'Meal not found!'
 }
-
+// Fonction qui insert les touches de pagination
 function pages2(pageNum){
     pagination = document.querySelector('#pagination2')
     let pages = ''
@@ -256,6 +276,7 @@ function pages2(pageNum){
     }
     pagination.innerHTML = pages
 }
+// Fonction de pagination
 function paginate2(array, pageID=1){
     let pageNum = array.length/cardNum
     let endIndex = pageID*cardNum
@@ -269,6 +290,7 @@ function paginate2(array, pageID=1){
     cardInsert2(arrayPart)
     pages2(pageNum)
 }
+// Fonction onClick qui sert a defiler entre les pages
 function pageClick2(id){
     paginate2(paginationArray,id)
 }
